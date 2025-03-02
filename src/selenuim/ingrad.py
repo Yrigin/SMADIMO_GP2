@@ -6,14 +6,15 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import pandas as pd
 import time
+import os
+import sys
 
-# Настройка логирования
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s',
-                    handlers=[
-        logging.FileHandler("ingrad_scraping.log", encoding="utf-8"),  # Логи в файл с кодировкой UTF-8
-        logging.StreamHandler()]
-)
+# Добавляем путь к корневой папке проекта, чтобы импортировать модули из других папок
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from src.utils.file_utils import generate_csv_filename
+from src.utils.logging import logger
+
+
 
 # Настройка опций для Chrome
 chrome_options = Options()
@@ -22,11 +23,11 @@ chrome_options.add_argument("--ignore-certificate-errors")  # Игнориров
 
 try:
     # Автоматическая установка ChromeDriver
-    logging.info("Установка ChromeDriver")
+    logger.info("Установка ChromeDriver")
     service = Service(ChromeDriverManager().install())
 
     # Инициализация драйвера
-    logging.info("Инициализация веб-драйвера")
+    logger.info("Инициализация веб-драйвера")
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     # Создание DataFrame для хранения данны
@@ -35,13 +36,13 @@ try:
     # Перебор страниц с 1 по 5
     for page in range(1, 288):
         url = f"https://www.ingrad.ru/search/flats?page={page}"
-        logging.info(f"Переход на страницу: {url}")
+        logger.info(f"Переход на страницу: {url}")
         driver.get(url)
         time.sleep(5)  # Ожидание загрузки страницы
 
         # Поиск всех строк с классом "table-row"
         rows = driver.find_elements(By.CSS_SELECTOR, 'tr.table-row')
-        logging.info(f"Найдено строк: {len(rows)}")
+        logger.info(f"Найдено строк: {len(rows)}")
 
         # Обработка каждой строки
         for row in rows:
@@ -56,7 +57,7 @@ try:
             # logging.info(f"Добавлены данные: {row_data}")
 
     # Закрытие драйвера
-    logging.info("Закрытие веб-драйвера")
+    logger.info("Закрытие веб-драйвера")
     driver.quit()
 
     # Создание DataFrame
@@ -65,7 +66,7 @@ try:
     # Сохранение данных в Excel
     output_file = "ingrad_flats.xlsx"
     df.to_excel(output_file)
-    logging.info(f"Данные успешно сохранены в файл {output_file}.")
+    logger.info(f"Данные успешно сохранены в файл {output_file}.")
 
 except Exception as e:
-    logging.error(f"Произошла ошибка: {e}")
+    logger.error(f"Произошла ошибка: {e}")
