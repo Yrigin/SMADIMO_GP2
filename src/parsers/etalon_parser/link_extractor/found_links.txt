@@ -1,0 +1,7 @@
+/msk/object/desyatka/
+/msk/object/shagal_residence/
+/msk/object/mariinn-park/
+/msk/object/nagatino-i-land/
+/msk/object/shagal/
+/msk/object/voxhall/
+/msk/object/sokoliinn-park/
