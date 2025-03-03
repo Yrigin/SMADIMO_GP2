@@ -1,6 +1,14 @@
 import asyncio
 from playwright.async_api import async_playwright
 import pandas as pd
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from src.utils.logging import logger
+from src.utils.file_utils import generate_csv_filename
+
+filename = generate_csv_filename("sreda")
+logger.info(f"Saving data to {filename}")
 
 # Асинхронная функция для парсинга
 async def parse_apartments():
@@ -14,14 +22,12 @@ async def parse_apartments():
 
         # Создаем пустой список для хранения данных
         apartments_data = []
-
+        current_page = 1
         # Функция для нажатия кнопки "Загрузить еще"
         async def load_more():
             try:
                 # Ищем кнопку "Загрузить еще"
-                load_more_button = await page.query_selector(
-                    "xpath=//button[contains(@class, 'PageApartments_apartments__button__338LE')]"
-                )
+                load_more_button = await page.query_selector("xpath=//button[contains(@class, 'PageApartments_apartments__button__338LE')]")
                 if load_more_button:
                     # Прокручиваем страницу до кнопки
                     await load_more_button.scroll_into_view_if_needed()
@@ -31,12 +37,14 @@ async def parse_apartments():
                     await page.wait_for_timeout(5000)  # Ожидание 5 секунд
                     return True
             except Exception as e:
-                print(f"Ошибка при нажатии кнопки: {e}")
+                logger.info(f"Error when pressing the button: {e}")
+
             return False
 
         # Нажимаем кнопку "Загрузить еще" до тех пор, пока она есть
         while await load_more():
-            print("Загружено больше данных")
+            logger.info(f"Fetching data for page {current_page}")
+            current_page += 1
 
         # Получаем все карточки квартир на главной странице
         apartments = await page.query_selector_all(".ApartmentGridCard_apartment-grid-card__dZLSw")
@@ -114,17 +122,16 @@ async def parse_apartments():
                             "Срок сдачи": info_dict.get("Срок сдачи", "N/A")
                         })
 
-                        print(f"Обработана квартира {i + 1}/{len(apartments)}")
-
+                        logger.info(f"The apartment has been processed {i + 1}/{len(apartments)}")
 
                     except Exception as e:
-                        print(f"Ошибка при извлечении данных: {e}")
+                        logger.info(f"Error when extracting data: {e}")
 
                     # Закрываем вкладку с квартирой
                     await new_page.close()
 
             except Exception as e:
-                print(f"Ошибка при обработке квартиры: {e}")
+                logger.info(f"Error in apartment processing: {e}")
 
         # Закрытие браузера
         await browser.close()
@@ -133,10 +140,10 @@ async def parse_apartments():
         df = pd.DataFrame(apartments_data)
 
         # Сохраняем данные в CSV
-        df.to_csv("apartments_data_sreda.csv", index=False, encoding="utf-8-sig")
+        df.to_csv(filename, index=False, encoding="utf-8-sig")
 
         # Сохраняем данные в Excel
-        df.to_excel("apartments_data_sreda.xlsx", index=False)
+        # df.to_excel("sreda.xlsx", index=False)
 
         # Выводим DataFrame в консоль для проверки
         print(df)
