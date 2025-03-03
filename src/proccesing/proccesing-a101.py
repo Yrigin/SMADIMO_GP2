@@ -76,5 +76,16 @@ df['district'] = np.nan
 df['district_population'] = np.nan
 df['district_avg_salary'] = np.nan
 
-df.to_csv('a101_2025_03_03.csv', index=False)
+def remove_words(text, num_words_start, num_words_end):
+    words = text.split()
+    if len(words) > num_words_start + num_words_end:
+        return ' '.join(words[num_words_start: -num_words_end])
+    return ''
+
+num_words_start = 3 
+num_words_end = 1 
+
+df['description'] = df['description'].apply(lambda x: remove_words(x, num_words_start, num_words_end))
+
+df.to_csv('a101_2025_03_04.csv', index=False)
 
