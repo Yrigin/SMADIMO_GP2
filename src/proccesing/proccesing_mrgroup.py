@@ -45,6 +45,7 @@ new_df['complex'] = df['project'].apply(lambda x: extract_json_data(x, 'name'))
 new_df['description_complex'] = df['project'].apply(lambda x: extract_json_data(x, 'description'))
 new_df['developer'] = 'MR Group'  # Предполагаем, что застройщик один для всех записей
 new_df['address'] = new_df['complex'].apply(lambda x: projects[x])
+new_df["price"] = df["price"]
 
 
 new_df.to_csv("final_mrgroup.csv")
