@@ -3,10 +3,10 @@ def clean_price(price):
     cleaned_price = ''.join(filter(str.isdigit, price))
     return int(cleaned_price) if cleaned_price else None  # Возвращаем None, если цена невалидна
 
+import pandas as pd
 
-df_pik = []
-# Применяем функцию к столбцу 'price'
-df_pik['price'] = df_pik['price'].apply(clean_price)
+df_pik = pd.read_excel('pik_data.xlsx')
+
 
 # Удаляем строки с None (если есть невалидные цены)
 df_pik = df_pik.dropna(subset=['price'])
@@ -50,6 +50,9 @@ df_pik = df_pik.rename(columns={
     'Заселение': 'check_in'
 })
 
+
+# Применяем функцию к столбцу 'price'
+df_pik['price'] = df_pik['price'].apply(clean_price)
 
 df_pik[['rooms', 'area']] = df_pik['title'].str.split(',', expand=True)
 
