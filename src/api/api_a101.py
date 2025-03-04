@@ -1,21 +1,29 @@
 import requests
 import pandas as pd
-
+import sys
+import os
+# Добавляем путь к корневой папке проекта, чтобы импортировать модули из других папок
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from src.utils.file_utils import generate_csv_filename
+from src.utils.logging import logger
 def get_flats_data(limit, offset):
     url = f"https://a101.ru/api/v2/flat/?ordering=actual_price&view=card&filter_type=price&limit={limit}&offset={offset}&city=msk&ab_test=false"
+    logger.info(f"Fetching flats data from {url}")
     response = requests.get(url)
     if response.status_code == 200:
+        logger.info("Successfully fetched flats data")
         return response.json()
     else:
-        print(f"Ошибка при запросе: {response.status_code}")
+        logger.error(f"Ошибка при запросе: {response.status_code}")
         return None
 
 def main():
     flats_list = []
-    limit = 100  
-    total_flats = 6044 
+    limit = 100
+    total_flats = 6044
 
     for offset in range(0, total_flats, limit):
+        logger.info(f"Processing offset {offset}")
         flats_data = get_flats_data(limit, offset)
         if flats_data:
             for flat in flats_data.get('results', []):
@@ -90,21 +98,23 @@ def main():
 
     df = pd.DataFrame(flats_list)
     df.to_csv('flats_data.csv', index=False)
-    print("Данные успешно сохранены в flats_data.csv")
+    logger.info("Данные успешно сохранены в flats_data.csv")
 
 if __name__ == "__main__":
     main()
 
-
 df = pd.read_csv('flats_data.csv', header='infer', sep=',')
+logger.info("Flats data loaded from flats_data.csv")
 
 def get_complex_data():
     url = "https://a101.ru/api/v2/updated_complex/"
+    logger.info(f"Fetching complex data from {url}")
     response = requests.get(url)
     if response.status_code == 200:
+        logger.info("Successfully fetched complex data")
         return response.json().get('results', [])
     else:
-        print(f"Ошибка при запросе: {response.status_code}")
+        logger.error(f"Ошибка при запросе: {response.status_code}")
         return None
 
 def main():
@@ -126,33 +136,32 @@ def main():
                 "Latitude": complex.get('latitude'),
                 "Longitude": complex.get('longitude'),
                 "Category": complex.get('category'),
-
                 "Distance to MKAD": complex.get('distance_to_mkad'),
                 "Metro Set": complex.get('metro_set'),
-
                 "On Sale Soon": complex.get('on_sale_soon'),
                 "Map Polygon Points": complex.get('map_polygon_points'),
-
-
             }
             complex_list.append(complex_info)
 
-
     df = pd.DataFrame(complex_list)
     df.to_csv('complex_data.csv', index=False)
-    print("Данные успешно сохранены в complex_data.csv")
+    logger.info("Данные успешно сохранены в complex_data.csv")
 
 if __name__ == "__main__":
     main()
 
 df1 = pd.read_csv('complex_data.csv', header='infer', sep=',')
+logger.info("Complex data loaded from complex_data.csv")
 
 df1_selected = df1[['Title', 'Latitude', 'Longitude', 'Distance to MKAD', 'Metro Set', 'Map Polygon Points']]
 df1_selected = df1_selected.rename(columns={'Title': 'Complex'})
 merged_df = pd.merge(df, df1_selected, on='Complex', how='inner')
+logger.info("Merged flats and complex data")
 
 df2 = pd.read_csv('a101_projectssss.csv', header='infer', sep=';')
+logger.info("Loaded additional project data from a101_projectssss.csv")
 
 df2 = df2.rename(columns={'Название ЖК': 'Complex'})
 merged_df1 = pd.merge(merged_df, df2, on='Complex', how='inner')
 merged_df1.to_csv('a101_data.csv', index=False)
+logger.info("Final data saved to a101_data.csv")

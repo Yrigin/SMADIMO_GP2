@@ -5,18 +5,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import time
 import pandas as pd
-import logging
-
+import sys
+import os
+# Добавляем путь к корневой папке проекта, чтобы импортировать модули из других папок
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from src.utils.file_utils import generate_csv_filename
+from src.utils.logging import logger
 # Настройка логирования
-logging.basicConfig(
-    level=logging.INFO,  # Уровень логирования (INFO, DEBUG, WARNING, ERROR, CRITICAL)
-    format="%(asctime)s - %(levelname)s - %(message)s",  # Формат сообщений
-    handlers=[
-        logging.FileHandler("a101_parsing.log", encoding="utf-8"),  # Логи в файл с кодировкой UTF-8
-        logging.StreamHandler()  # Логи в консоль
-    ]
-)
-logger = logging.getLogger(__name__)
+
 
 # Настройка опций для Chrome
 chrome_options = Options()
