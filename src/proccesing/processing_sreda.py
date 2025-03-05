@@ -18,7 +18,7 @@ df = df.rename(columns={
     'Срок сдачи': 'check_in',
     'price for м2': 'price_per_metre',
     'Корпус': 'building',
-    'rooms_number': 'rooms'
+    'apartment_type': 'rooms'
 })
 
 # Удаляем лишние столбцы
@@ -47,5 +47,16 @@ df.loc[df['complex'] == 'Среда на Лобачевского', 'description
 df.loc[df['complex'] == 'Среда на Кутузовском', 'description'] = '«Среда на Кутузовском» — место для тех, кто хочет вывести свой личный комфорт на новый уровень. Квартал бизнес-класса появится на западе Москвы в престижном, экологически чистом районе Кунцево. Проект сочетает в себе ритмичность и динамичность, которые так ценят жители современного мегаполиса, но при этом бережно вписан в окружающую среду и гармонично дополняет ее.'
 
 
-df.to_csv('/Users/strel/Documents/SMADIMO_GP2/data/final_sreda.csv', index=False, encoding='utf-8-sig')
 print(df.columns)
+
+print(df['rooms'].unique())
+
+df['rooms'] = df['rooms'].replace({
+    'Квартира студия': 1,
+    '1-комнатная квартира': 1,
+    '2-комнатная квартира': 2,
+    '3-комнатная квартира': 3}).astype(int)
+
+print(df['rooms'].unique())
+
+df.to_csv('/Users/strel/Documents/SMADIMO_GP2/data/final_sreda.csv', index=False, encoding='utf-8-sig')
